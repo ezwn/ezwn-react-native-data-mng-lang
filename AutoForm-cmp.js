@@ -138,12 +138,23 @@ const innerComponent = (type, value, onChange, onValidityChange, clientMap) => {
                 onValidityChange={onValidityChange}
             />
         default:
-            const client = clientMap[primitive];
-            return <PickerInput
-                client={client}
-                onChange={onChange}
-                value={value}
-                onValidityChange={onValidityChange}
-            />;
+            if (clientMap) {
+                const client = clientMap[primitive];
+                return <PickerInput
+                    client={client}
+                    onChange={onChange}
+                    value={value}
+                    onValidityChange={onValidityChange}
+                />;
+            } else {
+                return <TextInput
+                    onChange={onChange}
+                    value={value}
+                    nullable={nullable}
+                    minLength={size && size[0]}
+                    maxLength={size && size[1]}
+                    onValidityChange={onValidityChange}
+                />
+            }
     }
 }
