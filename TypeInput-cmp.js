@@ -6,7 +6,7 @@ import { DateTimeInput } from "ezwn-ux-native/forms/DateTimeInput-cmp";
 import { DurationInput } from "ezwn-ux-native/forms/DurationInput-cmp";
 import { PickerInput } from "ezwn-ux-native/forms/PickerInput-cmp";
 
-export const AutoInput = ({ type, value, onChange, onValidityChange, clientMap, CustomInput }) => {
+export const TypeInput = ({ type, value, onChange, onValidityChange, clientMap, CustomInput }) => {
     return <>{
         CustomInput
             ? <CustomInput value={value} onChange={onChange} onValidityChange={onValidityChange} />

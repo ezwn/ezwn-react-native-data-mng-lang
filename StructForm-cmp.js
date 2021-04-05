@@ -3,18 +3,23 @@ import { View } from "react-native";
 
 import { Field } from "ezwn-ux-native/forms/Field-cmp";
 
-import { AutoInput } from "./AutoInput-cmp";
+import { TypeInput } from "./TypeInput-cmp";
 
 const idToLabel = str => str[0].toUpperCase() + str.replace(/[A-Z]/g, letter => ` ${letter.toLowerCase()}`).substring(1);
 
-export const AutoForm = ({ schema, data, updateData, structKey, exclude, clientMap, customInputMap, onValidityChange }) => {
-    const { structs } = schema;
-    let [validityMap, setValidityMap] = useState({});
+/**
+ * A form based on a struct.
+ */
+export const StructForm = ({ struct, data, updateData, onValidityChange, clientMap, customInputMap, showOwner }) => {
 
-    const struct = structs[structKey];
+    let [validityMap, setValidityMap] = useState({});
     const { props } = struct;
 
-    const shouldNotExcludeFn = key => exclude.indexOf(key) === -1 && !props[key].isId && !props[key].isModificationTime && !props[key].isDeletedFlag;
+    const propSelectorFn = propId =>
+        !props[propId].isId
+        && !props[propId].isModificationTime
+        && !props[propId].isDeletedFlag
+        && (showOwner || !props[propId].isOwner);
 
     const createOnValidityChange = (propId) => (valid) => {
         validityMap = { ...validityMap, [propId]: valid };
@@ -23,7 +28,7 @@ export const AutoForm = ({ schema, data, updateData, structKey, exclude, clientM
 
     useEffect(() => {
         if (onValidityChange && props) {
-            const propKeys = Object.keys(props).filter(shouldNotExcludeFn);
+            const propKeys = Object.keys(props).filter(propSelectorFn);
 
             const globalValidity = propKeys.map(key => !!validityMap[key])
                 .reduce((accumulator, currentValue) => accumulator && currentValue, true);
@@ -44,22 +49,22 @@ export const AutoForm = ({ schema, data, updateData, structKey, exclude, clientM
     return <View>
         {
             Object.keys(props)
-                .filter(shouldNotExcludeFn)
-                .map(key => <Field key={key} label={idToLabel(props[key].id)}>
-                    <AutoInput
-                        type={props[key].type}
-                        value={data[key]}
-                        onChange={value => onChange(key, value)}
-                        onValidityChange={createOnValidityChange(key)}
+                .filter(propSelectorFn)
+                .map(propId => <Field key={propId} label={idToLabel(propId)}>
+                    <TypeInput
+                        type={props[propId].type}
+                        value={data[propId]}
+                        onChange={value => onChange(propId, value)}
+                        onValidityChange={createOnValidityChange(propId)}
                         clientMap={clientMap}
-                        CustomInput={customInputMap[key]}
+                        CustomInput={customInputMap[propId]}
                     />
                 </Field>)
         }
     </View>
 }
 
-AutoForm.defaultProps = {
-    exclude: [],
-    customInputMap: {}
+StructForm.defaultProps = {
+    customInputMap: {},
+    showOwner: false
 };

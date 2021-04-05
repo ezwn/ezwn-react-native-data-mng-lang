@@ -6,8 +6,20 @@ import { VerticalBorderLayout } from "ezwn-ux-native/layouts/VerticalBorderLayou
 import { ContextualMenu } from "ezwn-ux-native/app-components/ContextualMenu-cmp";
 import { FontAwesomeTextIcon } from "ezwn-ux-native/text-icons/FontAwsomeTextIcon-cmp";
 
-const ContextMenu = ({ useRepository, routerLocation }) => {
-  const { insertNew } = useRepository();
+export const StructList = ({ routerLocation, ItemContentComponent, repository }) => {
+  const history = useHistory();
+  const { list, findAll } = repository;
+  useEffect(findAll, [findAll]);
+
+  return <VerticalBorderLayout bottom={<ContextMenu repository={repository} routerLocation={routerLocation} />}>
+    {list.map(item => <ListItem key={item.id} onPress={() => history.push(`${routerLocation}/${item.id}`)}>
+      <ItemContentComponent item={item} />
+    </ListItem>)}
+  </VerticalBorderLayout>
+};
+
+const ContextMenu = ({ repository, routerLocation }) => {
+  const { insertNew } = repository;
   const history = useHistory();
 
   return (
@@ -20,16 +32,4 @@ const ContextMenu = ({ useRepository, routerLocation }) => {
       </ContextualMenu.Choice>
     </ContextualMenu>
   );
-};
-
-export const CrudList = ({ routerLocation, ItemContentComponent, useRepository }) => {
-  const history = useHistory();
-  const { list, findAll } = useRepository();
-  useEffect(findAll, [findAll]);
-
-  return <VerticalBorderLayout bottom={<ContextMenu useRepository={useRepository} routerLocation={routerLocation} />}>
-    {list.map(item => <ListItem key={item.id} onPress={() => history.push(`${routerLocation}/${item.id}`)}>
-      <ItemContentComponent item={item} />
-    </ListItem>)}
-  </VerticalBorderLayout>
 };

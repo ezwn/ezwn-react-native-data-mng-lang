@@ -3,30 +3,18 @@ import { useHistory } from "react-router";
 import { Text } from "react-native";
 
 import { useSchema } from "./Schema-ctx";
-import { AutoForm } from "./AutoForm-cmp";
+import { StructForm } from "./StructForm-cmp";
 import { VerticalBorderLayout } from "ezwn-ux-native/layouts/VerticalBorderLayout-cmp";
 import { ContextualMenu } from "ezwn-ux-native/app-components/ContextualMenu-cmp";
 import { FontAwesomeTextIcon } from "ezwn-ux-native/text-icons/FontAwsomeTextIcon-cmp";
 import { Padded } from "ezwn-ux-native/layouts/Padded-cmp";
 
-const ContextMenu = ({ valid, setDeleting }) => {
-  const history = useHistory();
-
-  return (
-    <ContextualMenu>
-      <ContextualMenu.Choice onPress={() => setDeleting(true)}>
-        <FontAwesomeTextIcon fontAwesomeIcon="faMinus" text="Delete" />
-      </ContextualMenu.Choice>
-      <ContextualMenu.Choice onPress={() => history.goBack()} enabled={valid}>
-        <FontAwesomeTextIcon fontAwesomeIcon="faCheck" text="Ok" />
-      </ContextualMenu.Choice>
-    </ContextualMenu>
-  );
-};
-
-export const CrudItemDetails = ({ useRepository, structId, id, onNameChanged, clientMap, labelProp }) => {
+/**
+ * A form based on a struct and capable to interract with the persist microservice.
+ */
+export const StructAdvancedForm = ({ repository, structId, id, onNameChanged, clientMap, labelProp, showOwner }) => {
   const { schema } = useSchema();
-  const { list, replace } = useRepository();
+  const { list, replace } = repository;
   const history = useHistory();
   const [valid, setValid] = useState(false);
   const [item, setItem] = useState(list.find(r => r.id === id));
@@ -57,23 +45,37 @@ export const CrudItemDetails = ({ useRepository, structId, id, onNameChanged, cl
     }
   }
 
-  return deleting ? <ConfirmDelete useRepository={useRepository} id={id} setDeleting={setDeleting} /> : (
+  return deleting ? <ConfirmDelete repository={repository} id={id} setDeleting={setDeleting} /> : (
     <VerticalBorderLayout bottom={<ContextMenu setDeleting={setDeleting} valid={valid} />}>
-      <AutoForm
-        schema={schema}
+      <StructForm
+        struct={schema.structs[structId]}
         data={item}
         updateData={updateItem}
-        structKey={structId}
         clientMap={clientMap}
         onValidityChange={setValid}
+        showOwner={showOwner}
       />
     </VerticalBorderLayout>
   );
 };
 
+const ContextMenu = ({ valid, setDeleting }) => {
+  const history = useHistory();
 
-const CofirmContextMenu = ({ useRepository, id, setDeleting }) => {
-  const { deleteById } = useRepository();
+  return (
+    <ContextualMenu>
+      <ContextualMenu.Choice onPress={() => setDeleting(true)}>
+        <FontAwesomeTextIcon fontAwesomeIcon="faMinus" text="Delete" />
+      </ContextualMenu.Choice>
+      <ContextualMenu.Choice onPress={() => history.goBack()} enabled={valid}>
+        <FontAwesomeTextIcon fontAwesomeIcon="faCheck" text="Ok" />
+      </ContextualMenu.Choice>
+    </ContextualMenu>
+  );
+};
+
+const CofirmContextMenu = ({ repository, id, setDeleting }) => {
+  const { deleteById } = repository;
 
   return (
     <ContextualMenu>
@@ -87,8 +89,8 @@ const CofirmContextMenu = ({ useRepository, id, setDeleting }) => {
   );
 };
 
-const ConfirmDelete = ({ useRepository, id, setDeleting }) => {
-  return <VerticalBorderLayout bottom={<CofirmContextMenu useRepository={useRepository} id={id} setDeleting={setDeleting} />}>
+const ConfirmDelete = ({ repository, id, setDeleting }) => {
+  return <VerticalBorderLayout bottom={<CofirmContextMenu repository={repository} id={id} setDeleting={setDeleting} />}>
     <Padded><Text style={{ fontSize: 30, color: "red" }}>Sure to delete ???</Text></Padded>
   </VerticalBorderLayout>
 

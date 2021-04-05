@@ -70,9 +70,10 @@ class Parser {
     const [, primitive, , size, , valueRange, , mult] = propTypeStr.match(/([\d\w]+)(\(([\d\.,]*)\))?(\<([\d\.]*)\>)?(\[([\d\.]*)\])?/);
 
     const isId = prefixedPropId.startsWith("#") || prefixedPropId.startsWith("$");
-    const isModificationTime = prefixedPropId.startsWith("@");
+    const isModificationTime = prefixedPropId.startsWith("*");
+    const isOwner = prefixedPropId.startsWith("@");
     const isDeletedFlag = prefixedPropId.startsWith("-");
-    const propId = (isId || isModificationTime || isDeletedFlag) ? prefixedPropId.substring(1) : prefixedPropId
+    const propId = (isId || isModificationTime || isDeletedFlag || isOwner) ? prefixedPropId.substring(1) : prefixedPropId;
 
     const parseRange = (rangeStr) => {
       if (!rangeStr)
@@ -85,6 +86,7 @@ class Parser {
       isId,
       isModificationTime,
       isDeletedFlag,
+      isOwner,
       id: propId,
       type: {
         primitive,
